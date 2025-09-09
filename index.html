@@ -1,4 +1,4 @@
-!doctype html>
+<!doctype html>
 <html lang="pl">
 <head>
 <meta charset="utf-8" />
@@ -63,7 +63,8 @@
     apiKey: "AIzaSyB8mftq5Yiia8UWunR89pjTW9MfqeRcHP4",
     authDomain: "super-czat-85201.firebaseapp.com",
     projectId: "super-czat-85201",
-    storageBucket: "super-czat-85201.appspot.com",
+    // WAŻNA ZMIANA: Wskazujemy na nasz nowy zasobnik
+    storageBucket: "super-czat-85201-pliki", 
     messagingSenderId: "537617938926",
     appId: "1:537617938926:web:10d0871c6bea58f52b36ff"
   };
@@ -89,19 +90,12 @@
   let currentUserId = null, chatId = null, unsubscribe = null;
   
   async function initializeAuthAndChat() {
-    try {
-      await setPersistence(auth, browserLocalPersistence);
-    } catch (error) {
-      console.error("Nie udało się ustawić trwałego logowania:", error);
-    }
+    try { await setPersistence(auth, browserLocalPersistence); } 
+    catch (error) { console.error("Nie udało się ustawić trwałego logowania:", error); }
     
     onAuthStateChanged(auth, user => {
-      if (user) {
-        currentUserId = user.uid;
-        setupChat();
-      } else {
-        signInAnonymously(auth).catch(e => console.error("Błąd logowania:", e));
-      }
+      if (user) { currentUserId = user.uid; setupChat(); } 
+      else { signInAnonymously(auth).catch(e => console.error("Błąd logowania:", e)); }
     });
   }
   
@@ -128,13 +122,9 @@
     const authorId = `...${msg.userId.slice(-5)}`;
     let content = `<span class="author">User: ${authorId}</span>`;
     
-    if (msg.type === 'image') {
-        content += `<img src="${msg.url}" class="chat-image" alt="wysłane zdjęcie">`;
-    } else if (msg.type === 'file') {
-        content += `<a href="${msg.url}" class="file-link" target="_blank" rel="noopener noreferrer">Pobierz plik: ${msg.name}</a>`;
-    } else { // 'text'
-        content += `<div class="text">${msg.text}</div>`;
-    }
+    if (msg.type === 'image') { content += `<img src="${msg.url}" class="chat-image" alt="wysłane zdjęcie">`; } 
+    else if (msg.type === 'file') { content += `<a href="${msg.url}" class="file-link" target="_blank" rel="noopener noreferrer">Pobierz plik: ${msg.name}</a>`; } 
+    else { content += `<div class="text">${msg.text}</div>`; }
     d.innerHTML = content;
     messagesEl.appendChild(d);
   }
@@ -150,20 +140,15 @@
         await uploadBytes(storageRef, file);
         const url = await getDownloadURL(storageRef);
         
-        const isImage = file.type.startsWith('image/');
         await addDoc(collection(db, 'chats', chatId, 'messages'), {
-            type: isImage ? 'image' : 'file',
+            type: file.type.startsWith('image/') ? 'image' : 'file',
             url: url,
             name: file.name,
             userId: currentUserId,
             timestamp: serverTimestamp()
         });
-    } catch (e) {
-        console.error("Błąd wysyłania pliku:", e);
-    } finally {
-        sendBtn.disabled = false;
-        sendBtn.textContent = 'Wyślij';
-    }
+    } catch (e) { console.error("Błąd wysyłania pliku:", e); } 
+    finally { sendBtn.disabled = false; sendBtn.textContent = 'Wyślij'; }
   }
 
   async function sendMessage() {
@@ -171,10 +156,7 @@
     if (!text || !currentUserId) return;
     try {
       await addDoc(collection(db, 'chats', chatId, 'messages'), {
-        type: 'text',
-        text: text,
-        userId: currentUserId,
-        timestamp: serverTimestamp()
+        type: 'text', text: text, userId: currentUserId, timestamp: serverTimestamp()
       });
       textInput.value = '';
     } catch (e) { console.error("Błąd wysyłania tekstu:", e); }
@@ -188,3 +170,19 @@
 </script>
 </body>
 </html>
+```
+
+---
+
+### Krok 3: Ustaw reguły CORS dla NOWEGO zasobnika
+
+Teraz musimy "powiedzieć" naszemu nowemu zasobnikowi, że ma akceptować pliki z Twojej strony.
+
+1.  Otwórz Google Cloud Shell, klikając ikonę `>_` w prawym górnym rogu panelu Google Cloud.
+2.  Gdy terminal się załaduje, wklej pierwszą komendę i naciśnij Enter:
+    ```
+    echo '[{"origin": ["https://pawelidziaszek2-sketch.github.io"], "method": ["GET", "POST", "PUT"], "responseHeader": ["Content-Type"], "maxAgeSeconds": 3600}]' > cors-config.json
+    ```
+3.  Teraz wklej drugą komendę, która używa **nowej nazwy zasobnika**, i naciśnij Enter:
+    ```
+    gsutil cors set cors-config.json gs://super-czat-85201-pliki
