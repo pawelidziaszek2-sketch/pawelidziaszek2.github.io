@@ -59,14 +59,14 @@
     </div>
   </div>
 <script type="module">
+  // Poprawna konfiguracja z projektu "superkomunikator-2025"
   const firebaseConfig = {
-    apiKey: "AIzaSyB8mftq5Yiia8UWunR89pjTW9MfqeRcHP4",
-    authDomain: "super-czat-85201.firebaseapp.com",
-    projectId: "super-czat-85201",
-    // WAŻNA ZMIANA: Wskazujemy na nasz nowy zasobnik
-    storageBucket: "super-czat-85201-pliki", 
-    messagingSenderId: "537617938926",
-    appId: "1:537617938926:web:10d0871c6bea58f52b36ff"
+    apiKey: "AIzaSyCsPaxiGkrtx50V0k42pYPueXpwO523RXU",
+    authDomain: "superkomunikator-2025.firebaseapp.com",
+    projectId: "superkomunikator-2025",
+    storageBucket: "superkomunikator-2025-pliki", 
+    messagingSenderId: "743497254229",
+    appId: "1:743497254229:web:c43976ddadba766a6f9bdc"
   };
   
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -170,19 +170,4 @@
 </script>
 </body>
 </html>
-```
 
----
-
-### Krok 3: Ustaw reguły CORS dla NOWEGO zasobnika
-
-Teraz musimy "powiedzieć" naszemu nowemu zasobnikowi, że ma akceptować pliki z Twojej strony.
-
-1.  Otwórz Google Cloud Shell, klikając ikonę `>_` w prawym górnym rogu panelu Google Cloud.
-2.  Gdy terminal się załaduje, wklej pierwszą komendę i naciśnij Enter:
-    ```
-    echo '[{"origin": ["https://pawelidziaszek2-sketch.github.io"], "method": ["GET", "POST", "PUT"], "responseHeader": ["Content-Type"], "maxAgeSeconds": 3600}]' > cors-config.json
-    ```
-3.  Teraz wklej drugą komendę, która używa **nowej nazwy zasobnika**, i naciśnij Enter:
-    ```
-    gsutil cors set cors-config.json gs://super-czat-85201-pliki
